@@ -1,4 +1,5 @@
 from PyQt5.QtWidgets import *
+from PyQt5.QtGui import QColor
 
 #class JCLogView():
     
@@ -30,8 +31,22 @@ window.show()
 
 def on_button_click(self):
     dialog = QFileDialog()
-    dialog.getOpenFileName(self, 'Open Log', 'C:', 'Log Files (*.log *.txt)')
-    alert.exec_()
+    fname = dialog.getOpenFileName(None, 'Open Log', '/')
+    color = QColorDialog.getColor(255, 0, 0)
+
+    if fname[0]:
+            f = open(fname[0], 'r')
+
+            with f:
+                data = f.read()
+                editor.setText(data)
+                
+                #num_lines = sum(1 for line in output)
+                #line_count = f.readline(num_lines)
+
+                if '[ERROR]' in data:
+                        editor.setTextColor(color)
+
 
 # Execute the app indefinitely, until user terminates process/app.
 button.clicked.connect(on_button_click)
