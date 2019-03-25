@@ -46,7 +46,8 @@ def on_button_click(self):
 
             with f:
                 data = f.read()
-                    
+                editor.setText(data)
+
                 # this code works but it colors the entire log.
                 # trying to figure out how to get it to color a single line only
                 if '[ERROR]' in data:
@@ -56,4 +57,3 @@ def on_button_click(self):
 # Execute the app indefinitely, until user terminates process/app.
 button.clicked.connect(on_button_click)
 app.exec_()
-
