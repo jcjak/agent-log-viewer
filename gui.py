@@ -30,7 +30,7 @@ layout.addWidget(button)
 # Instantiating the syntax highlighter module to color the text
 highlighter = QTextCharFormat()
 
-# Log text display output
+# Log text display output 
 layout.addWidget(editor)
 
 window.setLayout(layout)
