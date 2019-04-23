@@ -1,59 +1,83 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
-import re
+import sys
 
 #class JCLogView():
     
 # Every QT GUI needs to be initialized with QApplication
-app = QApplication([])
+
+# Code to display log files after import
+#editor = QTextEdit()
+
+# Log text display output 
+
+#app = QApplication([])
+app = QApplication(sys.argv)
 app.setStyle('Fusion')
 app.setApplicationName('JumpCloud Log Viewer')
 app.setOrganizationName('JumpCloud')
 
-# Code to display log files after import
-editor = QTextEdit()
-editor.setMinimumSize(800, 600)
-editor.setAcceptDrops(True)
-editor.setReadOnly(True)
-editor.setText('Test')
-
-lineeditor = QLineEdit()
-
-# Sets the window, layout, and button.
-window = QWidget()
-layout = QVBoxLayout()
 button = QPushButton('Add Log File')
 
-layout.addWidget(button)
+class Window(QWidget):
+    def __init__(self):
+        super(Window, self).__init__()
+        self.editor = QTextEdit(self)
+        self.editor.setMinimumSize(400, 300)
+        self.editor.setAcceptDrops(True)
+        self.editor.setReadOnly(True)
+        self.editor.setText('Test')
 
-# Instantiating the syntax highlighter module to color the text
-highlighter = QTextCharFormat()
+        layout = QVBoxLayout(self)
+        layout.addWidget(button)
+        layout.addWidget(self.editor)
+        self.setLayout(layout)
 
-# Log text display output 
-layout.addWidget(editor)
+    def on_button_click(self):
+        dialog = QFileDialog()
+        fname = dialog.getOpenFileName(None, 'Open Log', '/', 'Log Files (*.log)')
 
-window.setLayout(layout)
-window.show()
+        #if fname[0]:
+        f = open(fname[0], 'r')
 
-def on_button_click(self):
-    dialog = QFileDialog()
-    fname = dialog.getOpenFileName(None, 'Open Log', '/')
-    color = QColor(255,0,0)
+        #with f:
+        data = f.read()
 
-    if fname[0]:
-            f = open(fname[0], 'r')
+        # Instantiating the syntax highlighter module to color the text
+        class Highlighter(QSyntaxHighlighter):
+            def __init__(self, parent):
+                super(Highlighter, self).__init__(parent)
+                self.sectionFormat = QTextCharFormat()
+                self.sectionFormat.setForeground(Qt.blue)
+                self.errorFormat = QTextCharFormat()
+                self.errorFormat.setForeground(Qt.red)
 
-            with f:
-                data = f.read()
-                editor.setText(data)
+        # Defining error levels
+            def highlightBlock(self, text):
+                if text.startswith('[ERROR]'):
+                    self.setFormat(0, len(text), self.errorFormat)    
+                elif text.startswith('[INFO]'):
+                    self.setFormat(0, len(text), self.sectionFormat)
+        
+        Window().editor.setText(data)
+    button.clicked.connect(on_button_click)
+    
+    # Runs the above function on button click.
+    
 
-                # this code works but it colors the entire log.
-                # trying to figure out how to get it to color a single line only
-                if '[ERROR]' in data:
-                        editor.setStyleSheet('color: red')
+    # this code works but it colors the entire widget.
+    # trying to figure out how to get it to color a single line only
+    # if '[ERROR]' in data:
+    #     editor.setStyleSheet('color: red')
+    #     data.setStyleSheet('color: red')
 
 
 # Execute the app indefinitely, until user terminates process/app.
-button.clicked.connect(on_button_click)
-app.exec_()
+
+if __name__ == '__main__':
+    import sys
+    window = Window()
+    window.show()
+    #button.clicked.connect(on_button_click)
+    app.exec_()
