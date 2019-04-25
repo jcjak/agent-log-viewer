@@ -3,16 +3,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 import sys
 
-#class JCLogView():
-    
 # Every QT GUI needs to be initialized with QApplication
-
-# Code to display log files after import
-#editor = QTextEdit()
-
-# Log text display output 
-
-#app = QApplication([])
 class Application(QApplication):
     def __init__(self):
         self.app = QApplication(sys.argv)
@@ -20,7 +11,21 @@ class Application(QApplication):
         self.app.setApplicationName('JumpCloud Log Viewer')
         self.app.setOrganizationName('JumpCloud')
 
-#button = QPushButton('Add Log File')
+# Instantiating the syntax highlighter module to color the text
+class Highlighter(QSyntaxHighlighter):
+    def __init__(self, parent):
+        super(Highlighter, self).__init__(parent)
+        self.sectionFormat = QTextCharFormat()
+        self.sectionFormat.setForeground(QColor(0,0,255))
+        self.errorFormat = QTextCharFormat()
+        self.errorFormat.setForeground(QColor(255,0,0))
+
+# Defining error levels
+    def highlightBlock(self, text):
+        if '[ERROR]' in text:
+            self.setFormat(0, len(text), self.errorFormat)    
+        elif '[INFO]' in text:
+            self.setFormat(0, len(text), self.sectionFormat)
 
 class Window(QWidget):
     def __init__(self):
@@ -50,23 +55,10 @@ class Window(QWidget):
                 text = stream.readAll()
                 #info = QtCore.QFileInfo(path)
                 self.editor.setPlainText(text)
+                self.highlighter = Highlighter(self.editor.document())
                 file.close()
 
-                # Instantiating the syntax highlighter module to color the text
-                class Highlighter(QSyntaxHighlighter):
-                    def __init__(self, parent):
-                        super(Highlighter, self).__init__(parent)
-                        self.sectionFormat = QTextCharFormat()
-                        self.sectionFormat.setForeground(Qt.blue)
-                        self.errorFormat = QTextCharFormat()
-                        self.errorFormat.setForeground(Qt.red)
-
-                # Defining error levels
-                    def highlightBlock(self, text):
-                        if text.startswith('[ERROR]'):
-                            self.setFormat(0, len(text), self.errorFormat)    
-                        elif text.startswith('[INFO]'):
-                            self.setFormat(0, len(text), self.sectionFormat)
+                
         
         #Window().editor.setText(data)
     #button.clicked.connect(on_button_click)
