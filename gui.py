@@ -13,12 +13,14 @@ import sys
 # Log text display output 
 
 #app = QApplication([])
-app = QApplication(sys.argv)
-app.setStyle('Fusion')
-app.setApplicationName('JumpCloud Log Viewer')
-app.setOrganizationName('JumpCloud')
+class Application(QApplication):
+    def __init__(self):
+        self.app = QApplication(sys.argv)
+        self.app.setStyle('Fusion')
+        self.app.setApplicationName('JumpCloud Log Viewer')
+        self.app.setOrganizationName('JumpCloud')
 
-button = QPushButton('Add Log File')
+#button = QPushButton('Add Log File')
 
 class Window(QWidget):
     def __init__(self):
@@ -29,39 +31,45 @@ class Window(QWidget):
         self.editor.setReadOnly(True)
         self.editor.setText('Test')
 
+        self.button_OpenDialog = QPushButton('Open Log File', self)
+        self.button_OpenDialog.clicked.connect(self.on_button_click)
+
+        # Order of layout widgets determines their presentation.
         layout = QVBoxLayout(self)
-        layout.addWidget(button)
         layout.addWidget(self.editor)
+        layout.addWidget(self.button_OpenDialog)
         self.setLayout(layout)
 
     def on_button_click(self):
-        dialog = QFileDialog()
-        fname = dialog.getOpenFileName(None, 'Open Log', '/', 'Log Files (*.log)')
+        path = QFileDialog.getOpenFileName(None, 'Open Log', '/', 'Log Files (*.log)')
 
-        #if fname[0]:
-        f = open(fname[0], 'r')
+        if path[0]:
+            file = QFile(path[0])
+            if file.open(QIODevice.ReadOnly):
+                stream = QTextStream(file)
+                text = stream.readAll()
+                #info = QtCore.QFileInfo(path)
+                self.editor.setPlainText(text)
+                file.close()
 
-        #with f:
-        data = f.read()
+                # Instantiating the syntax highlighter module to color the text
+                class Highlighter(QSyntaxHighlighter):
+                    def __init__(self, parent):
+                        super(Highlighter, self).__init__(parent)
+                        self.sectionFormat = QTextCharFormat()
+                        self.sectionFormat.setForeground(Qt.blue)
+                        self.errorFormat = QTextCharFormat()
+                        self.errorFormat.setForeground(Qt.red)
 
-        # Instantiating the syntax highlighter module to color the text
-        class Highlighter(QSyntaxHighlighter):
-            def __init__(self, parent):
-                super(Highlighter, self).__init__(parent)
-                self.sectionFormat = QTextCharFormat()
-                self.sectionFormat.setForeground(Qt.blue)
-                self.errorFormat = QTextCharFormat()
-                self.errorFormat.setForeground(Qt.red)
-
-        # Defining error levels
-            def highlightBlock(self, text):
-                if text.startswith('[ERROR]'):
-                    self.setFormat(0, len(text), self.errorFormat)    
-                elif text.startswith('[INFO]'):
-                    self.setFormat(0, len(text), self.sectionFormat)
+                # Defining error levels
+                    def highlightBlock(self, text):
+                        if text.startswith('[ERROR]'):
+                            self.setFormat(0, len(text), self.errorFormat)    
+                        elif text.startswith('[INFO]'):
+                            self.setFormat(0, len(text), self.sectionFormat)
         
-        Window().editor.setText(data)
-    button.clicked.connect(on_button_click)
+        #Window().editor.setText(data)
+    #button.clicked.connect(on_button_click)
     
     # Runs the above function on button click.
     
@@ -77,7 +85,7 @@ class Window(QWidget):
 
 if __name__ == '__main__':
     import sys
+    app = Application()
     window = Window()
     window.show()
-    #button.clicked.connect(on_button_click)
     app.exec_()
