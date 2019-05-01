@@ -10,22 +10,29 @@ class Application(QApplication):
         self.app.setStyle('Fusion')
         self.app.setApplicationName('JumpCloud Log Viewer')
         self.app.setOrganizationName('JumpCloud')
+        self.app.setWindowIcon(QIcon('logo-2018-copy.ico'))
 
 # Instantiating the syntax highlighter module to color the text
 class Highlighter(QSyntaxHighlighter):
     def __init__(self, parent):
         super(Highlighter, self).__init__(parent)
-        self.sectionFormat = QTextCharFormat()
-        self.sectionFormat.setForeground(QColor(0,0,255))
+        self.warnFormat = QTextCharFormat()
+        self.warnFormat.setBackground(QColor(255,255,0))
         self.errorFormat = QTextCharFormat()
-        self.errorFormat.setForeground(QColor(255,0,0))
+        self.errorFormat.setForeground(QColor(255,255,0))
+        self.errorFormat.setBackground(QColor(255,0,0))
+        self.versFormat = QTextCharFormat()
+        self.versFormat.setForeground(QColor(90,25,255))
+        self.versFormat.setBackground(QColor(0,255,0))
 
 # Defining error levels
     def highlightBlock(self, text):
         if '[ERROR]' in text:
             self.setFormat(0, len(text), self.errorFormat)    
-        elif '[INFO]' in text:
-            self.setFormat(0, len(text), self.sectionFormat)
+        elif '[WARN]' in text:
+            self.setFormat(0, len(text), self.warnFormat)
+        elif 'AgentVersion' in text:
+            self.setFormat(0, len(text), self.versFormat)
 
 class Window(QWidget):
     def __init__(self):
@@ -34,7 +41,7 @@ class Window(QWidget):
         self.editor.setMinimumSize(400, 300)
         self.editor.setAcceptDrops(True)
         self.editor.setReadOnly(True)
-        self.editor.setText('Test')
+        self.editor.setText('Awaiting Log File')
 
         self.button_OpenDialog = QPushButton('Open Log File', self)
         self.button_OpenDialog.clicked.connect(self.on_button_click)
@@ -57,21 +64,6 @@ class Window(QWidget):
                 self.editor.setPlainText(text)
                 self.highlighter = Highlighter(self.editor.document())
                 file.close()
-
-                
-        
-        #Window().editor.setText(data)
-    #button.clicked.connect(on_button_click)
-    
-    # Runs the above function on button click.
-    
-
-    # this code works but it colors the entire widget.
-    # trying to figure out how to get it to color a single line only
-    # if '[ERROR]' in data:
-    #     editor.setStyleSheet('color: red')
-    #     data.setStyleSheet('color: red')
-
 
 # Execute the app indefinitely, until user terminates process/app.
 
